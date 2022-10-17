@@ -6,15 +6,37 @@ chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
     const inputNoteField = document.querySelector("#input-note")
     const thisPageBtn = document.querySelector("#this-page-btn")
     const ulEl = document.querySelector("#ul-el")
+    const deleteBtn=document.querySelector("#delete-btn")
 
-    let myBookmarksLocalStorage = JSON.parse(localStorage.getItem("myBookmarks"))
-    let myNotesLocalStorage = JSON.parse(localStorage.getItem("myNotes"))
+    const myBookmarksLocalStorage = JSON.parse(localStorage.getItem("myBookmarks"))
+    const myNotesLocalStorage = JSON.parse(localStorage.getItem("myNotes"))
 
-    
     if(myBookmarksLocalStorage || myNotesLocalStorage){
         myNotes=myNotesLocalStorage
         myBookmarks=myBookmarksLocalStorage
-        renderBookmarks()
+        render(myBookmarks,myNotes)
+    }
+
+    function render(bookmarks, notes) {
+        let listItems = ""
+        for (let i = 0; i < bookmarks.length; i++) {
+            if(notes[i]==""){
+                listItems += `
+                <li>
+                    <a href="${bookmarks[i]}" target="_blank">${bookmarks[i]}</a> 
+                </li>
+                `
+            }
+            else{
+                listItems += `
+                <li>
+                    <a href="${bookmarks[i]}" target="_blank">${bookmarks[i]}</a> - ${notes[i]}
+                </li>
+                `
+            }
+        }
+
+        ulEl.innerHTML = listItems
     }
 
     thisPageBtn.addEventListener("click", function () {
@@ -26,18 +48,14 @@ chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         localStorage.setItem("myBookmarks", JSON.stringify(myBookmarks));
         localStorage.setItem("myNotes", JSON.stringify(myNotes));
 
-        renderBookmarks()
+        render(myBookmarks,myNotes)
     })
 
-    function renderBookmarks() {
-        let listItems = ""
-        for (let i = 0; i < myBookmarks.length; i++) {
-            listItems += `
-    <li>
-        <a href="${myBookmarks[i]}" target="_blank">${myBookmarks[i]}</a> - ${myNotes[i]}
-    </li>
-    `
-        }
-        ulEl.innerHTML = listItems
-    }
+    deleteBtn.addEventListener("dblclick", function () {
+        localStorage.clear()
+        url = tabs[0].url;
+        myBookmarks = []
+        myNotes = []
+        render(myBookmarks,myNotes)
+    })
 })
